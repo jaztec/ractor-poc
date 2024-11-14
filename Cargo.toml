@@ -1,0 +1,14 @@
+[package]
+name = "ractor-poc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+#ractor = { version = "0.13", features = ["cluster"] }
+#ractor_actors = { version = "0.4" }
+#ractor_cluster = { version = "0.13" }
+#ractor_cluster_derive = { version = "0.13" }
+tokio = { version = "1", features = ["rt", "time", "sync", "macros", "rt-multi-thread", "signal", "tracing"] }
+tracing-glog = { version = "^0.4" }
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+tracing = { version = "0.1.40" }
