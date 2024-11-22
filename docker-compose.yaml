@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  node_1:
+    build:
+      context: .
+      target: app
+    environment:
+      RUST_LOG: debug
+      PORT: 8080
+      COOKIE: koekje
+      HOSTNAME: node_1
+    network_mode: host
+  node_2:
+    build:
+      context: .
+      target: app
+    environment:
+      RUST_LOG: debug
+      PORT: 8081
+      COOKIE: koekje
+      HOSTNAME: node_2
+    network_mode: host
+  node_3:
+    build:
+      context: .
+      target: app
+    environment:
+      RUST_LOG: debug
+      PORT: 8082
+      COOKIE: koekje
+      HOSTNAME: node_3
+    network_mode: host

@@ -1,36 +1,39 @@
 mod server;
 pub mod error;
+mod dns;
 
 use std::io::{stderr, IsTerminal};
 use clap::{Parser, Subcommand};
+use tokio::{join, task};
 use tracing::info;
 use tracing_subscriber::filter::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::Registry;
+use crate::dns::{scan_network, ScanOptions};
 use crate::error::Result;
 use crate::server::{start_server, StartServerOptions};
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Subcommand, Clone)]
 enum Command {
     /// Run the client application
     Run(RunArgs)
 }
 
-#[derive(Debug, Parser)]
+#[derive(Debug, Parser, Clone)]
 struct RunArgs {
     /// The port to run this client on.
-    #[clap(short, long)]
+    #[clap(short, long, env = "PORT")]
     port: u16,
     /// The cookie to be used inside the node. This has to be the same
     /// value for all cluster nodes.
-    #[clap(short, long)]
+    #[clap(short, long, env = "COOKIE")]
     cookie: String,
     /// The hostname for this node.
-    #[clap(short='n', long)]
+    #[clap(short='n', long, env = "HOSTNAME")]
     hostname: String,
 }
 
-#[derive(Debug, Parser)]
+#[derive(Debug, Parser, Clone)]
 struct Args {
     #[command(subcommand)]
     command: Command,
@@ -44,6 +47,14 @@ async fn main() -> Result<()> {
 
     match args.command {
         Command::Run(args) => {
+            let dns_args = args.clone();
+            let join = task::spawn(async move {
+                scan_network(ScanOptions {
+                    service_port: 9222,
+                    hostname: dns_args.hostname,
+                }).await
+            });
+
             let (_, handle) = start_server(StartServerOptions {
                 hostname: args.hostname,
                 cookie: args.cookie,
@@ -52,7 +63,7 @@ async fn main() -> Result<()> {
 
             info!("Starting server");
 
-            handle.await?;
+            let (_, _) = join!(handle, join);
         }
     }
 

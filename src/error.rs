@@ -1,14 +1,15 @@
-use ractor::SpawnErr;
 use thiserror::Error;
-use tokio::task::JoinError;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Error)]
 pub enum Error {
     #[error(transparent)]
-    Spawn(#[from] SpawnErr),
+    Spawn(#[from] ractor::SpawnErr),
 
     #[error(transparent)]
-    Join(#[from] JoinError)
+    Join(#[from] tokio::task::JoinError),
+
+    #[error(transparent)]
+    Mdns(#[from] zeroconf::error::Error),
 }
